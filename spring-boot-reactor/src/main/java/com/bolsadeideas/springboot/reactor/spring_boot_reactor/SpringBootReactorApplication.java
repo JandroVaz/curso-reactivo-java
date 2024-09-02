@@ -1,6 +1,8 @@
 package com.bolsadeideas.springboot.reactor.spring_boot_reactor;
 
+import com.bolsadeideas.springboot.reactor.spring_boot_reactor.models.Comentarios;
 import com.bolsadeideas.springboot.reactor.spring_boot_reactor.models.Usuario;
+import com.bolsadeideas.springboot.reactor.spring_boot_reactor.models.UsuarioComentarios;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -25,8 +27,47 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 
-		convertToString();
+		ejemploUsuarioComentariosFlatmap();
 
+	}
+
+	public void ejemploUsuarioComentariosFlatmap(){
+
+		Mono<Usuario> usuarioMono = Mono.fromCallable(() -> new Usuario("Jonh", "Doe"));
+		Mono<Comentarios> comentarioUsuarioMono = Mono.fromCallable(()-> {
+			Comentarios comentarios = new Comentarios();
+			comentarios.addComentarios("Hola pepe prueba");
+			comentarios.addComentarios("Segunda prueba de comentario");
+			comentarios.addComentarios("Tercer comntario");
+			return comentarios;
+		});
+
+		// Convertimos dos Clases:
+		// - Usuario
+		// - Comentarios
+		// A combiarla con UsuarioComentarios con las funciones de flecha.
+		usuarioMono.flatMap(u -> comentarioUsuarioMono.map(c ->
+				new UsuarioComentarios(u, c)))
+				.subscribe(uc -> log.info(uc.toString()));
+	}
+
+
+	public void convertToList() throws Exception {
+
+		List<Usuario> listUsuarios = new ArrayList<>();
+		listUsuarios.add(new Usuario("Andres", "sanchez"));
+		listUsuarios.add(new Usuario("Pedro","Cortes"));
+		listUsuarios.add(new Usuario("Diego","San"));
+		listUsuarios.add(new Usuario("Juan","Carrasco"));
+		listUsuarios.add(new Usuario("Paco","Perico"));
+		listUsuarios.add(new Usuario("Bruce","Lee"));
+		listUsuarios.add(new Usuario("Bruce","Willy"));
+
+		Flux.fromIterable(listUsuarios)
+				.collectList()
+				.subscribe(usuarios -> {
+					usuarios.forEach(item -> log.info(item.toString()));
+				});
 	}
 
 	public void convertToString() throws Exception {
